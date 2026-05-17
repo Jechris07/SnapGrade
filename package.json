@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "dev:api": "npm --prefix snapgrade-react run dev:api",
+    "dev": "npm --prefix snapgrade-react run dev",
+    "build": "npm --prefix snapgrade-react run build"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4"
+  }
+}
