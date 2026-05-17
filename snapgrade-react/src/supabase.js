@@ -12,10 +12,17 @@ if (supabaseUrl === 'YOUR_SUPABASE_URL' || supabaseAnonKey === 'YOUR_SUPABASE_AN
   console.error('Supabase environment variables are not configured. Please update your .env file.');
   throw new Error('Supabase is not properly configured. Please update your environment variables.');
 }
+
+const browserSessionStorage = typeof window !== 'undefined'
+  ? window.sessionStorage
+  : undefined;
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
+    storage: browserSessionStorage,
+    storageKey: 'snapgrade-auth-token',
     detectSessionInUrl: true
   }
 });

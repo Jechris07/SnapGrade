@@ -34,7 +34,7 @@ export default function App() {
         <Routes>
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin-register" element={<AdminRegister />} />
+          <Route path="/admin-register" element={<ProtectedRoute requiredRole="admin"><Layout><AdminRegister /></Layout></ProtectedRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home"     element={<ProtectedRoute requiredRole="student"><Layout><Home /></Layout></ProtectedRoute>} />

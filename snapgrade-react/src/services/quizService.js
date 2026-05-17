@@ -2,6 +2,8 @@
 //  services/quizService.js  — localStorage + backend quiz API
 // ─────────────────────────────────────────────────────────────────
 
+import { sanitizeGeneratedQuestions, sanitizeNotes, sanitizeQuizRecord } from '../utils/security';
+
 const sg = {
   get: (k, fb = null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } },
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
@@ -22,12 +24,14 @@ function getApiBaseUrl() {
 export async function generateQuestions(notes, numQ) {
   let response;
   const apiBaseUrl = getApiBaseUrl();
+  const safeNotes = sanitizeNotes(notes);
+  const safeNumQ = Math.min(30, Math.max(1, Number(numQ) || 1));
 
   try {
     response = await fetch(`${apiBaseUrl}/generate-questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes, numQ }),
+      body: JSON.stringify({ notes: safeNotes, numQ: safeNumQ }),
     });
   } catch (error) {
     throw new Error(
@@ -50,16 +54,22 @@ export async function generateQuestions(notes, numQ) {
     throw new Error(data.error || `Could not generate quiz. (${response.status})`);
   }
 
-  if (!Array.isArray(data.questions) || !data.questions.length) {
+  const questions = sanitizeGeneratedQuestions(data.questions);
+
+  if (!questions.length) {
     throw new Error('No questions generated. Try again.');
   }
 
-  return data.questions;
+  return questions;
 }
 
 export function saveQuiz(quizData) {
   const all = sg.get('sg_quizzes', []);
-  const quiz = { ...quizData, id: 'quiz_' + Date.now(), completedAt: new Date().toISOString() };
+  const quiz = sanitizeQuizRecord({
+    ...quizData,
+    id: 'quiz_' + Date.now(),
+    completedAt: new Date().toISOString(),
+  });
   all.push(quiz);
   sg.set('sg_quizzes', all);
   return quiz.id;
@@ -67,12 +77,16 @@ export function saveQuiz(quizData) {
 
 export function getUserQuizzes(userId) {
   return sg.get('sg_quizzes', [])
+    .map(sanitizeQuizRecord)
+    .filter(Boolean)
     .filter(q => q.userId === userId && q.completed)
     .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
 }
 
 export function getAllQuizzes() {
   return sg.get('sg_quizzes', [])
+    .map(sanitizeQuizRecord)
+    .filter(Boolean)
     .filter(q => q.completed)
     .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
 }

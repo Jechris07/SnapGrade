@@ -3,6 +3,7 @@ import { useNavigate }         from 'react-router-dom';
 import { toast }               from 'react-toastify';
 import { useAuth }             from '../context/AuthContext';
 import { generateQuestions, getUserQuizzes } from '../services/quizService';
+import { sanitizeNotes, sanitizeQuizText } from '../utils/security';
 
 export default function Home() {
   const { userProfile } = useAuth();
@@ -22,15 +23,18 @@ export default function Home() {
   }, [userProfile]);
 
   async function handleGenerate() {
-    if (!notes.trim())        { toast.error('Please paste your notes first.'); return; }
-    if (notes.length < 60)   { toast.error('Notes are too short. Add more content.'); return; }
+    const safeNotes = sanitizeNotes(notes);
+
+    if (!safeNotes)        { toast.error('Please paste your notes first.'); return; }
+    if (safeNotes.length < 60)   { toast.error('Notes are too short. Add more content.'); return; }
     if (numQ < 1 || numQ > 30){ toast.error('Number of questions must be 1–30.'); return; }
     setLoading(true);
     try {
-      const questions = await generateQuestions(notes, numQ);
+      const questions = await generateQuestions(safeNotes, numQ);
       sessionStorage.setItem('active_quiz', JSON.stringify({
-        userId: userProfile.uid, userName: userProfile.name,
-        notesPreview: notes.substring(0, 180) + (notes.length > 180 ? '...' : ''),
+        userId: userProfile.uid,
+        userName: sanitizeQuizText(userProfile.name, 80),
+        notesPreview: sanitizeQuizText(safeNotes.substring(0, 180) + (safeNotes.length > 180 ? '...' : ''), 220),
         questions, totalItems: questions.length,
       }));
       toast.success(`${questions.length} questions ready! Good luck 🎯`);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { supabase } from '../supabase';
+import { validatePassword } from '../services/authService';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -29,7 +30,10 @@ export default function ResetPassword() {
             console.error('Session set error:', error);
             toast.error('Invalid reset link. Please request a new one.');
             navigate('/forgot-password');
+            return;
           }
+
+          window.history.replaceState(null, document.title, window.location.pathname);
         });
       } else {
         // No tokens, redirect to forgot password
@@ -53,8 +57,9 @@ export default function ResetPassword() {
       toast.error('Passwords do not match.');
       return;
     }
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters.');
+    const pwError = validatePassword(newPassword);
+    if (pwError) {
+      toast.error(pwError);
       return;
     }
 

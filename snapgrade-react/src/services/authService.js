@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────────
 
 import { supabase } from '../supabase';
+import { sanitizeEmail, sanitizeName, sanitizeRole } from '../utils/security';
 
 const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
 const SUPABASE_CLEANUP_TIMEOUT_MS = 2000;
@@ -19,9 +20,9 @@ function withTimeout(promise, timeoutMs = SUPABASE_REQUEST_TIMEOUT_MS) {
 function profileFromAuthUser(authUser, role = authUser?.user_metadata?.role || 'student') {
   return {
     uid: authUser.id,
-    name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-    email: authUser.email,
-    role,
+    name: sanitizeName(authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User'),
+    email: sanitizeEmail(authUser.email),
+    role: sanitizeRole(role),
     isActive: true,
   };
 }
@@ -29,9 +30,9 @@ function profileFromAuthUser(authUser, role = authUser?.user_metadata?.role || '
 function profileFromRow(row) {
   return {
     uid: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
+    name: sanitizeName(row.name),
+    email: sanitizeEmail(row.email),
+    role: sanitizeRole(row.role),
     isActive: row.is_active,
   };
 }
@@ -67,6 +68,21 @@ async function clearSignupSession() {
   }
 }
 
+async function assertCurrentUserIsAdmin() {
+  const { data: { user }, error: userError } = await withTimeout(supabase.auth.getUser());
+  if (userError || !user) throw new Error('Admin access is required.');
+
+  const { data, error } = await withTimeout(
+    supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+  );
+
+  if (error || data?.role !== 'admin') throw new Error('Admin access is required.');
+}
+
 export function validatePassword(p) {
   if (p.length < 12 || p.length > 15)
     return 'Password must be 12 to 15 characters long.';
@@ -82,8 +98,11 @@ export function validatePassword(p) {
 }
 
 export async function loginUser(email, password) {
+  const safeEmail = sanitizeEmail(email);
+  if (!safeEmail || !password) throw new Error('Incorrect email or password.');
+
   const { data, error } = await withTimeout(
-    supabase.auth.signInWithPassword({ email: email.trim(), password })
+    supabase.auth.signInWithPassword({ email: safeEmail, password })
   );
   if (error) {
     console.error('Login error:', error);
@@ -134,18 +153,26 @@ export async function loginUser(email, password) {
 }
 
 export async function registerUser(name, email, password, role = 'student') {
+  const safeName = sanitizeName(name);
+  const safeEmail = sanitizeEmail(email);
+  const safeRole = sanitizeRole(role);
+
+  if (!safeName) throw new Error('Name cannot be empty.');
+  if (!safeEmail) throw new Error('Please enter a valid email address.');
+  if (safeRole === 'admin') await assertCurrentUserIsAdmin();
+
   const passwordError = validatePassword(password);
   if (passwordError) throw new Error(passwordError);
 
   try {
     const { data, error } = await withTimeout(
       supabase.auth.signUp({
-        email: email.trim(),
+        email: safeEmail,
         password,
         options: {
           data: {
-            name: name.trim(),
-            role,
+            name: safeName,
+            role: safeRole,
           },
         },
       })
@@ -163,10 +190,10 @@ export async function registerUser(name, email, password, role = 'student') {
     }
 
     try {
-      return await saveUserProfile(data.user, role);
+      return await saveUserProfile(data.user, safeRole);
     } catch (profileError) {
       console.warn('Account was created, but the profile row could not be saved:', profileError);
-      return profileFromAuthUser(data.user, role);
+      return profileFromAuthUser(data.user, safeRole);
     }
   } catch (error) {
     if (error.message === 'Request timed out') {
@@ -187,7 +214,10 @@ export async function logoutUser() {
 }
 
 export async function resetPassword(email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const safeEmail = sanitizeEmail(email);
+  if (!safeEmail) throw new Error('Please enter a valid email address.');
+
+  const { error } = await supabase.auth.resetPasswordForEmail(safeEmail, {
     redirectTo: `${window.location.origin}/reset-password`,
   });
   if (error) {
@@ -199,11 +229,16 @@ export async function resetPassword(email) {
 }
 
 export async function updateUserName(uid, name) {
+  const safeName = sanitizeName(name);
+  if (!safeName) throw new Error('Name cannot be empty.');
+
   const { error } = await supabase
     .from('users')
-    .update({ name: name.trim() })
+    .update({ name: safeName })
     .eq('id', uid);
   if (error) throw new Error(error.message);
+
+  return safeName;
 }
 
 export async function toggleUserActive(uid, isActive) {
