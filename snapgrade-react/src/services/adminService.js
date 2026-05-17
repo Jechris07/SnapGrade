@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────────
 
 import { supabase } from '../supabase';
+import { sanitizeEmail, sanitizeName, sanitizeRole } from '../utils/security';
 
 const sg = {
   get: (k, fb = null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } },
@@ -11,9 +12,9 @@ const sg = {
 function profileFromRow(row) {
   return {
     uid: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
+    name: sanitizeName(row.name),
+    email: sanitizeEmail(row.email),
+    role: sanitizeRole(row.role),
     isActive: row.is_active,
     createdAt: row.created_at,
   };

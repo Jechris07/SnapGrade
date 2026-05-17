@@ -2,8 +2,10 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sanitizeGeneratedQuestions, sanitizeNotes } from '../src/utils/security.js';
 
 const PORT = Number(process.env.API_PORT || 8787);
+const MAX_BODY_BYTES = 64 * 1024;
 
 loadLocalEnv();
 
@@ -53,15 +55,42 @@ function sendJson(req, res, statusCode, payload) {
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
   });
   res.end(JSON.stringify(payload));
 }
 
+function clientError(message) {
+  const error = new Error(message);
+  error.expose = true;
+  return error;
+}
+
 async function readJsonBody(req) {
   const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+  let receivedBytes = 0;
+
+  for await (const chunk of req) {
+    receivedBytes += chunk.length;
+    if (receivedBytes > MAX_BODY_BYTES) {
+      throw clientError('Request body is too large.');
+    }
+    chunks.push(chunk);
+  }
+
   const raw = Buffer.concat(chunks).toString('utf8');
-  return raw ? JSON.parse(raw) : {};
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw clientError('Invalid JSON request body.');
+  }
 }
 
 function buildPrompt(notes, numQ) {
@@ -88,7 +117,7 @@ async function generateQuestions(notes, numQ) {
     },
     body: JSON.stringify({
       model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: buildPrompt(notes, numQ) }],
+      messages: [{ role: 'user', content: buildPrompt(sanitizeNotes(notes), numQ) }],
       max_tokens: 4000,
       temperature: 0.3,
     }),
@@ -106,11 +135,18 @@ async function generateQuestions(notes, numQ) {
     .trim();
 
   const jsonMatch = rawText?.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) throw new Error('Could not parse quiz. Try rephrasing your notes.');
+  if (!jsonMatch) throw clientError('Could not parse quiz. Try rephrasing your notes.');
 
-  const questions = JSON.parse(jsonMatch[0]);
-  if (!Array.isArray(questions) || !questions.length) {
-    throw new Error('No questions generated. Try again.');
+  let parsedQuestions;
+  try {
+    parsedQuestions = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw clientError('Could not parse quiz. Try rephrasing your notes.');
+  }
+
+  const questions = sanitizeGeneratedQuestions(parsedQuestions).slice(0, numQ);
+  if (!questions.length) {
+    throw clientError('No questions generated. Try again.');
   }
 
   return questions;
@@ -130,18 +166,22 @@ const server = createServer(async (req, res) => {
   if (req.method === 'POST' && req.url === '/api/generate-questions') {
     try {
       const { notes, numQ } = await readJsonBody(req);
+      const safeNotes = sanitizeNotes(notes);
       const questionCount = Number(numQ);
 
-      if (!notes?.trim()) throw new Error('Please paste your notes first.');
-      if (notes.length < 60) throw new Error('Notes are too short. Add more content.');
-      if (questionCount < 1 || questionCount > 30) {
-        throw new Error('Number of questions must be 1-30.');
+      if (!safeNotes) throw clientError('Please paste your notes first.');
+      if (safeNotes.length < 60) throw clientError('Notes are too short. Add more content.');
+      if (!Number.isInteger(questionCount) || questionCount < 1 || questionCount > 30) {
+        throw clientError('Number of questions must be 1-30.');
       }
 
-      const questions = await generateQuestions(notes, questionCount);
+      const questions = await generateQuestions(safeNotes, questionCount);
       sendJson(req, res, 200, { questions });
     } catch (error) {
-      sendJson(req, res, 400, { error: error.message || 'Quiz generation failed.' });
+      if (!error.expose) console.error('Quiz generation error:', error);
+      sendJson(req, res, error.expose ? 400 : 500, {
+        error: error.expose ? error.message : 'Quiz generation failed. Please try again.',
+      });
     }
     return;
   }

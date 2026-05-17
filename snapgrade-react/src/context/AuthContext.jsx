@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabase';
+import { sanitizeEmail, sanitizeName, sanitizeRole } from '../utils/security';
 
 const AuthContext = createContext(null);
 const PROFILE_FETCH_TIMEOUT_MS = 300;
@@ -13,9 +14,9 @@ function profileFromAuthUser(authUser) {
 
   return {
     uid: authUser.id,
-    name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-    email: authUser.email,
-    role: authUser.user_metadata?.role || 'student',
+    name: sanitizeName(authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User'),
+    email: sanitizeEmail(authUser.email),
+    role: sanitizeRole(authUser.user_metadata?.role || 'student'),
     isActive: true,
   };
 }
@@ -23,9 +24,9 @@ function profileFromAuthUser(authUser) {
 function profileFromRow(row) {
   return {
     uid: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
+    name: sanitizeName(row.name),
+    email: sanitizeEmail(row.email),
+    role: sanitizeRole(row.role),
     isActive: row.is_active,
   };
 }

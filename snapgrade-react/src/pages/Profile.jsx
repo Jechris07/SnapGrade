@@ -3,6 +3,7 @@ import { toast }                from 'react-toastify';
 import { useAuth }              from '../context/AuthContext';
 import { getUserQuizzes }       from '../services/quizService';
 import { updateUserName } from '../services/authService';
+import { sanitizeName } from '../utils/security';
 
 export default function Profile() {
   const { userProfile, setUserProfile } = useAuth();
@@ -20,13 +21,20 @@ export default function Profile() {
     setStats({ total: quizzes.length, avg, best });
   }, [userProfile]);
 
-  function handleSave() {
-    if (!name.trim()) { toast.error('Name cannot be empty.'); return; }
-    updateUserName(userProfile.uid, name);
-    const updated = { ...userProfile, name: name.trim() };
-    setUserProfile(updated);
-    setEditing(false);
-    toast.success('Profile updated!');
+  async function handleSave() {
+    const safeName = sanitizeName(name);
+    if (!safeName) { toast.error('Name cannot be empty.'); return; }
+
+    try {
+      const savedName = await updateUserName(userProfile.uid, safeName);
+      const updated = { ...userProfile, name: savedName };
+      setUserProfile(updated);
+      setName(savedName);
+      setEditing(false);
+      toast.success('Profile updated!');
+    } catch (error) {
+      toast.error(error.message || 'Could not update profile.');
+    }
   }
 
   return (
