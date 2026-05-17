@@ -44,7 +44,17 @@
     grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
   }
   .auth-split-form {
-    @apply flex items-center justify-center px-6 py-10;
+    @apply relative flex items-center justify-center px-6 py-10 overflow-hidden;
+    background:
+      linear-gradient(135deg, rgba(102,126,234,0.09) 0%, rgba(255,255,255,0.96) 42%, rgba(240,147,251,0.12) 100%),
+      linear-gradient(90deg, rgba(102,126,234,0.08) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(118,75,162,0.07) 1px, transparent 1px);
+    background-size: auto, 34px 34px, 34px 34px;
+  }
+  .auth-split-form::after {
+    content: '';
+    @apply absolute inset-y-0 right-0 w-1 pointer-events-none;
+    background: linear-gradient(180deg, #667eea, #764ba2, #f093fb);
   }
   .auth-split-panel {
     @apply relative overflow-hidden flex items-center justify-center px-10 py-12 text-white;
@@ -65,11 +75,19 @@
     bottom: -80px; left: -70px;
   }
   .auth-split-card {
-    @apply w-full rounded-lg p-8 bg-white;
+    @apply w-full rounded-lg p-8 bg-white relative z-10;
     max-width: 420px;
     border: 1px solid rgba(102,126,234,0.1);
     box-shadow: 0 24px 60px rgba(99,102,241,0.13), 0 3px 12px rgba(0,0,0,0.05);
     animation: fadeSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
+  }
+  .auth-card-brand {
+    @apply flex items-center justify-center gap-2 mb-6 text-xs font-black uppercase tracking-widest text-indigo-500;
+  }
+  .auth-card-brand-mark {
+    @apply w-8 h-8 rounded-md flex items-center justify-center text-sm text-white tracking-normal;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 8px 20px rgba(102,126,234,0.32);
   }
   .auth-split-content {
     @apply relative z-10 max-w-md;

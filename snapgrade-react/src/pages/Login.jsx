@@ -42,6 +42,10 @@ export default function Login() {
     <div className="auth-split">
       <div className="auth-split-form">
         <div className="auth-split-card">
+          <div className="auth-card-brand">
+            <span className="auth-card-brand-mark">⚡️</span>
+            <span>Snapgrade</span>
+          </div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-black text-indigo-950">Welcome to Snapgrade!</h1>
             <p className="text-sm text-gray-400 mt-1">Sign in to continue your study session</p>
