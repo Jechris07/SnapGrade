@@ -47,7 +47,7 @@ export default function Register() {
   return (
     <div className="auth-bg">
       <div className="auth-card" style={{ maxWidth: 440 }}>
-        <div className="auth-logo">⚡</div>
+
         <div className="text-center mb-6">
           <h1 className="text-2xl font-black text-indigo-950">Create your account</h1>
           <p className="text-sm text-gray-400 mt-1">Start generating quizzes from your notes</p>
