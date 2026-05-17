@@ -39,6 +39,45 @@
     box-shadow: 0 28px 60px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.08);
     animation: scaleIn 0.32s cubic-bezier(0.22,1,0.36,1);
   }
+  .auth-split {
+    @apply min-h-screen grid bg-white;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
+  }
+  .auth-split-form {
+    @apply flex items-center justify-center px-6 py-10;
+  }
+  .auth-split-panel {
+    @apply relative overflow-hidden flex items-center justify-center px-10 py-12 text-white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  }
+  .auth-split-panel::before {
+    content: '';
+    @apply absolute rounded-full pointer-events-none;
+    width: 480px; height: 480px;
+    background: rgba(255,255,255,0.08);
+    top: -150px; right: -120px;
+  }
+  .auth-split-panel::after {
+    content: '';
+    @apply absolute rounded-full pointer-events-none;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,0.06);
+    bottom: -80px; left: -70px;
+  }
+  .auth-split-card {
+    @apply w-full rounded-lg p-8 bg-white;
+    max-width: 420px;
+    border: 1px solid rgba(102,126,234,0.1);
+    box-shadow: 0 24px 60px rgba(99,102,241,0.13), 0 3px 12px rgba(0,0,0,0.05);
+    animation: fadeSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
+  }
+  .auth-split-content {
+    @apply relative z-10 max-w-md;
+  }
+  .auth-split-logo {
+    @apply w-16 h-16 rounded-md flex items-center justify-center mb-6 text-3xl font-black text-indigo-100 bg-white;
+    box-shadow: 0 18px 38px rgba(30,27,75,0.22);
+  }
   .auth-logo {
     @apply w-16 h-16 rounded-md flex items-center justify-center mx-auto mb-4 text-3xl font-black text-white;
     background: linear-gradient(135deg, #667eea, #764ba2);
@@ -182,6 +221,18 @@
   }
   .nav-item:hover  { @apply bg-indigo-50 text-indigo-600; }
   .nav-item.active { @apply bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700; }
+}
+
+@media (max-width: 768px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+  }
+  .auth-split-form {
+    @apply order-2 py-8;
+  }
+  .auth-split-panel {
+    @apply order-1 min-h-64 justify-start;
+  }
 }
 
 

@@ -39,59 +39,71 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-bg">
-      <div className="auth-card">
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-black text-indigo-950">Welcome to Snapgrade!</h1>
-          <p className="text-sm text-gray-400 mt-1">Sign in to continue your study session</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="form-label">Email Address</label>
-            <input
-              className="form-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
+    <div className="auth-split">
+      <div className="auth-split-form">
+        <div className="auth-split-card">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-black text-indigo-950">Welcome to Snapgrade!</h1>
+            <p className="text-sm text-gray-400 mt-1">Sign in to continue your study session</p>
           </div>
-          <div>
-            <label className="form-label">Password</label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="form-label">Email Address</label>
               <input
-                className="form-input pr-16"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                data-form-type="other"
-                onCopy={(e) => e.preventDefault()}
-                onPaste={(e) => e.preventDefault()}
-                onCut={(e) => e.preventDefault()}
+                className="form-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
               />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 text-xs font-bold text-indigo-600"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
             </div>
-          </div>
-          <button className="btn-primary mt-2" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-400 mt-5">
-          <Link to="/forgot-password" className="text-indigo-600 font-bold hover:text-indigo-800">Forgot password?</Link>
-        </p>
-        <p className="text-center text-sm text-gray-400 mt-2">
-          No account yet?{' '}
-          <Link to="/register" className="text-indigo-600 font-bold hover:text-indigo-800">Create one free</Link>
-        </p>
+            <div>
+              <label className="form-label">Password</label>
+              <div className="relative">
+                <input
+                  className="form-input pr-16"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  data-form-type="other"
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                  onCut={(e) => e.preventDefault()}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 text-xs font-bold text-indigo-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
+            <button className="btn-primary mt-2" type="submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          <p className="text-center text-sm text-gray-400 mt-5">
+            <Link to="/forgot-password" className="text-indigo-600 font-bold hover:text-indigo-800">Forgot password?</Link>
+          </p>
+          <p className="text-center text-sm text-gray-400 mt-2">
+            No account yet?{' '}
+            <Link to="/register" className="text-indigo-600 font-bold hover:text-indigo-800">Create one free</Link>
+          </p>
+        </div>
+      </div>
+
+      <div className="auth-split-panel">
+        <div className="auth-split-content">
+
+          <p className="text-sm font-bold uppercase tracking-widest text-indigo-100/90">Snapgrade</p>
+          <h2 className="mt-3 text-4xl font-black leading-tight">Turn your notes into smarter practice.</h2>
+          <p className="mt-4 text-sm leading-6 text-white/80">
+            Generate quizzes, review results, and keep every study session moving with a cleaner workspace.
+          </p>
+        </div>
       </div>
     </div>
   );
