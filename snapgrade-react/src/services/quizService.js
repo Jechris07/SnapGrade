@@ -7,11 +7,24 @@ const sg = {
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
 };
 
+function getApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, '');
+  if (configuredUrl) return configuredUrl;
+
+  if (typeof window !== 'undefined') {
+    const localHosts = new Set(['localhost', '127.0.0.1']);
+    if (localHosts.has(window.location.hostname)) return 'http://localhost:8787/api';
+  }
+
+  return '/api';
+}
+
 export async function generateQuestions(notes, numQ) {
   let response;
+  const apiBaseUrl = getApiBaseUrl();
 
   try {
-    response = await fetch('/api/generate-questions', {
+    response = await fetch(`${apiBaseUrl}/generate-questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes, numQ }),

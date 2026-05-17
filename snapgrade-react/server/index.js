@@ -10,6 +10,7 @@ loadLocalEnv();
 function loadLocalEnv() {
   const serverDir = dirname(fileURLToPath(import.meta.url));
   const envPaths = [
+    resolve(serverDir, '.env'),
     resolve(process.cwd(), '.env'),
     resolve(serverDir, '..', '.env'),
   ];
@@ -31,10 +32,25 @@ function loadLocalEnv() {
   }
 }
 
-function sendJson(res, statusCode, payload) {
+function getAllowedOrigin(req) {
+  const origin = req.headers.origin;
+  if (!origin) return '*';
+
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return origin;
+  } catch {
+    return 'http://localhost:5173';
+  }
+
+  return 'http://localhost:5173';
+}
+
+function sendJson(req, res, statusCode, payload) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Origin': getAllowedOrigin(req),
+    'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   });
@@ -102,12 +118,12 @@ async function generateQuestions(notes, numQ) {
 
 const server = createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
-    sendJson(res, 204, {});
+    sendJson(req, res, 204, {});
     return;
   }
 
   if (req.method === 'GET' && req.url === '/api/health') {
-    sendJson(res, 200, { ok: true });
+    sendJson(req, res, 200, { ok: true });
     return;
   }
 
@@ -123,14 +139,14 @@ const server = createServer(async (req, res) => {
       }
 
       const questions = await generateQuestions(notes, questionCount);
-      sendJson(res, 200, { questions });
+      sendJson(req, res, 200, { questions });
     } catch (error) {
-      sendJson(res, 400, { error: error.message || 'Quiz generation failed.' });
+      sendJson(req, res, 400, { error: error.message || 'Quiz generation failed.' });
     }
     return;
   }
 
-  sendJson(res, 404, { error: 'Not found' });
+  sendJson(req, res, 404, { error: 'Not found' });
 });
 
 server.listen(PORT, () => {
