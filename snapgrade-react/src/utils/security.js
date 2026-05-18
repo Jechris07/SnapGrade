@@ -1,9 +1,32 @@
+import createDOMPurify from 'dompurify';
+
 const CONTROL_CHARS_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 const HTML_TAG_RE = /<[^>]*>/g;
+const SCRIPT_STYLE_BLOCK_RE = /<(script|style|template)[\s\S]*?>[\s\S]*?<\/\1>/gi;
 const ROLE_ALLOWLIST = new Set(['student', 'admin']);
+const browserWindow = typeof window !== 'undefined' && window.document ? window : null;
+const domPurify = browserWindow ? createDOMPurify(browserWindow) : null;
 
 function toStringValue(value) {
   return value == null ? '' : String(value);
+}
+
+export function sanitizeHtml(value) {
+  const html = toStringValue(value).replace(CONTROL_CHARS_RE, '');
+
+  if (!domPurify) {
+    return html
+      .replace(SCRIPT_STYLE_BLOCK_RE, '')
+      .replace(HTML_TAG_RE, '')
+      .replace(/[<>]/g, '');
+  }
+
+  return domPurify.sanitize(html, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true,
+    RETURN_TRUSTED_TYPE: false,
+  });
 }
 
 export function sanitizePlainText(value, {
@@ -16,7 +39,7 @@ export function sanitizePlainText(value, {
     .replace(CONTROL_CHARS_RE, '');
 
   if (stripMarkup) {
-    text = text.replace(HTML_TAG_RE, '').replace(/[<>]/g, '');
+    text = sanitizeHtml(text);
   }
 
   if (!allowNewlines) {
