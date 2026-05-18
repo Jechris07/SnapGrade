@@ -42,21 +42,38 @@ export default class ErrorBoundary extends Component {
             <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
               The app encountered an unexpected error. Please try refreshing the page.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              Refresh Page
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  background: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                style={{
+                  background: '#e2e8f0',
+                  color: '#475569',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Go Home
+              </button>
+            </div>
             {process.env.NODE_ENV === 'development' && (
               <details style={{ marginTop: '1rem', textAlign: 'left' }}>
                 <summary style={{ cursor: 'pointer', color: '#64748b' }}>Error Details (Dev Mode)</summary>
