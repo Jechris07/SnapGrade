@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import { colors, radii, shadows, transitions } from './src/utils/designTokens.js';
+
 export default {
   content: [
     './index.html',
@@ -7,17 +9,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary:   '#667eea',
-        secondary: '#764ba2',
-        accent:    '#f093fb',
+        primary:   colors.primary,
+        secondary: colors.secondary,
+        accent:    colors.accent,
+        success:   colors.success,
+        warning:   colors.warning,
+        danger:    colors.danger,
       },
       fontFamily: {
         sans: ['Segoe UI', 'system-ui', '-apple-system', 'sans-serif'],
       },
       animation: {
-        'fade-slide-up': 'fadeSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)',
-        'bounce-in':     'bounceIn 0.4s cubic-bezier(0.22,1,0.36,1)',
-        'scale-in':      'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1)',
+        'fade-slide-up': `fadeSlideUp ${transitions.normal} ${transitions.easing}`,
+        'bounce-in':     `bounceIn ${transitions.slow} ${transitions.easing}`,
+        'scale-in':      `scaleIn ${transitions.fast} ${transitions.easing}`,
         'float':         'float 3s ease-in-out infinite',
       },
       keyframes: {
@@ -38,6 +43,12 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%':      { transform: 'translateY(-7px)' },
         },
+      },
+      borderRadius: {
+        ...radii,
+      },
+      boxShadow: {
+        ...shadows,
       },
     },
   },

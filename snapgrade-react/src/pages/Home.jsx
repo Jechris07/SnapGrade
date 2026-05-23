@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 page-enter">
       <div className="mb-6">
-        <h2 className="text-2xl font-black text-indigo-950 tracking-tight">Generate a Quiz ⚡</h2>
+        <h2 className="text-2xl font-black text-primary-950 tracking-tight">Generate a Quiz ⚡</h2>
         <p className="text-sm text-gray-400 mt-1">Paste your notes and AI will create a personalized quiz in seconds</p>
       </div>
       <div className="card mb-4">
@@ -57,9 +57,9 @@ export default function Home() {
           <label className="form-label">Your Study Notes</label>
           <textarea className="form-input" rows={10} value={notes} onChange={e => setNotes(e.target.value)}
             placeholder={"Paste your study notes here...\n\nExample:\nThe mitochondria is the powerhouse of the cell..."}/>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-xs text-gray-300">{notes.length} characters</span>
-            {notes.length > 0 && notes.length < 60 && <span className="text-xs text-red-400 font-semibold">Add more content (min. 60 chars)</span>}
+          <div className="flex justify-between mt-2">
+            <span className="text-xs text-gray-400">{notes.length} characters</span>
+            {notes.length > 0 && notes.length < 60 && <span className="text-xs text-danger-500 font-semibold">Add more content (min. 60 chars)</span>}
           </div>
         </div>
         <div className="mb-5">
@@ -68,8 +68,8 @@ export default function Home() {
           <div className="flex items-center gap-3 flex-wrap">
             <input type="number" min={1} max={30} value={numQ}
               onChange={e => setNumQ(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-              className="form-input text-center text-xl font-black text-purple-700"
-              style={{ width: 100, padding: '0.6rem' }}/>
+              className="form-input text-center text-xl font-black text-secondary-700 w-24"
+              style={{ padding: '0.5rem' }}/>
             <div className="flex gap-2 flex-wrap">
               {[5, 10, 15, 20].map(n => (
                 <button key={n} onClick={() => setNumQ(n)}

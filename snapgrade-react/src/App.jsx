@@ -17,6 +17,8 @@ import Achievements    from './pages/Achievements';
 import Profile         from './pages/Profile';
 import AdminDashboard  from './pages/AdminDashboard';
 import AdminUsers      from './pages/AdminUsers';
+import NotFound        from './pages/NotFound';
+import AccessDenied    from './pages/AccessDenied';
 
 function Layout({ children }) {
   return (
@@ -32,6 +34,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin-register" element={<ProtectedRoute requiredRole="admin"><Layout><AdminRegister /></Layout></ProtectedRoute>} />
@@ -45,7 +48,7 @@ export default function App() {
           <Route path="/profile"  element={<ProtectedRoute requiredRole="student"><Layout><Profile /></Layout></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
           <Route path="/admin/users"     element={<ProtectedRoute requiredRole="admin"><Layout><AdminUsers /></Layout></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={3500} hideProgressBar={false} closeOnClick pauseOnHover />
       </AuthProvider>
