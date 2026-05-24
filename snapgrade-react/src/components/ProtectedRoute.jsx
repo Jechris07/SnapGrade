@@ -3,7 +3,11 @@ import { useAuth }  from '../context/AuthContext';
 import { toast }    from 'react-toastify';
 import AccessDenied from '../pages/AccessDenied';
 
-export default function ProtectedRoute({ children, requiredRole }) {
+function getDefaultRouteForRole(role) {
+  return role === 'admin' ? '/admin/dashboard' : '/home';
+}
+
+export default function ProtectedRoute({ children, requiredRole, denyOnRoleMismatch = false }) {
   const { userProfile, loading } = useAuth();
   const location = useLocation();
 
@@ -20,7 +24,10 @@ export default function ProtectedRoute({ children, requiredRole }) {
   }
 
   if (requiredRole && userProfile.role !== requiredRole) {
-    return <AccessDenied />;
+    if (denyOnRoleMismatch) {
+      return <AccessDenied />;
+    }
+    return <Navigate to={getDefaultRouteForRole(userProfile.role)} replace />;
   }
   return children;
 }

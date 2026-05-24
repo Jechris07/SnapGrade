@@ -15,10 +15,25 @@ export default function Login() {
 
   const redirectTo = location.state?.from?.pathname || null;
 
+  function getDefaultRouteForRole(role) {
+    return role === 'admin' ? '/admin/dashboard' : '/home';
+  }
+
+  function canAccessRoute(pathname, role) {
+    if (!pathname || pathname === '/login' || pathname === '/') return false;
+    if (pathname.startsWith('/admin') || pathname === '/dashboard') return role === 'admin';
+    return role !== 'admin';
+  }
+
+  function getLoginDestination(user) {
+    return canAccessRoute(redirectTo, user.role)
+      ? redirectTo
+      : getDefaultRouteForRole(user.role);
+  }
+
   useEffect(() => {
     if (userProfile) {
-      const destination = redirectTo || (userProfile.role === 'admin' ? '/admin/dashboard' : '/home');
-      navigate(destination, { replace: true });
+      navigate(getLoginDestination(userProfile), { replace: true });
     }
   }, [navigate, userProfile, redirectTo]);
 

@@ -2,6 +2,7 @@
 import { colors, radii, shadows, transitions } from './src/utils/designTokens.js';
 
 export default {
+  darkMode: 'class',
   content: [
     './index.html',
     './src/**/*.{js,jsx}',
