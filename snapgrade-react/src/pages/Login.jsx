@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { loginUser } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
@@ -7,16 +7,35 @@ import { useAuth } from '../context/AuthContext';
 export default function Login() {
   const { userProfile, setUserProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const redirectTo = location.state?.from?.pathname || null;
+
+  function getDefaultRouteForRole(role) {
+    return role === 'admin' ? '/admin/dashboard' : '/home';
+  }
+
+  function canAccessRoute(pathname, role) {
+    if (!pathname || pathname === '/login' || pathname === '/') return false;
+    if (pathname.startsWith('/admin') || pathname === '/dashboard') return role === 'admin';
+    return role !== 'admin';
+  }
+
+  function getLoginDestination(user) {
+    return canAccessRoute(redirectTo, user.role)
+      ? redirectTo
+      : getDefaultRouteForRole(user.role);
+  }
+
   useEffect(() => {
     if (userProfile) {
-      navigate(userProfile.role === 'admin' ? '/admin/dashboard' : '/home', { replace: true });
+      navigate(getLoginDestination(userProfile), { replace: true });
     }
-  }, [navigate, userProfile]);
+  }, [navigate, userProfile, redirectTo]);
 
   async function handleSubmit(e) {
     e.preventDefault();
