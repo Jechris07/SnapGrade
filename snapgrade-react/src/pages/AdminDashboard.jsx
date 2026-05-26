@@ -4,7 +4,7 @@ import { getAllStudents, getAnalytics } from '../services/adminService';
 import { exportStatisticsCSV }   from '../services/exportService';
 
 const dashboardCardClass = 'bg-white/80 dark:bg-slate-900/50 backdrop-blur-md border border-indigo-100/70 dark:border-slate-800/80 rounded-xl p-6 shadow-xl shadow-indigo-500/5 dark:shadow-black/20 text-slate-900 dark:text-white';
-const adminInputClass = 'bg-slate-950 text-slate-100 border border-slate-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const adminInputClass = 'bg-white dark:bg-[#0d121f] text-gray-950 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 shadow-sm dark:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-indigo-500 focus:border-purple-400 dark:focus:border-indigo-500 [color-scheme:light] dark:[color-scheme:dark]';
 
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
@@ -32,8 +32,31 @@ export default function AdminDashboard() {
 
   const avg = quizzes.length
     ? Math.round(quizzes.reduce((s, q) => s + (q.score / q.totalItems * 100), 0) / quizzes.length) : 0;
-  const topStudents  = students.map(u => ({ ...u, count: quizzes.filter(q => q.userId === u.uid).length }))
-    .sort((a, b) => b.count - a.count).slice(0, 5);
+  const studentById = new Map(students.map(u => [String(u.uid), u]));
+  const topStudents = Array.from(quizzes.reduce((acc, quiz) => {
+    const userId = quiz.userId ? String(quiz.userId) : '';
+    const student = userId ? studentById.get(userId) : null;
+    const fallbackName = quiz.userName?.trim() || 'Unknown student';
+    const key = userId || `name:${fallbackName.toLowerCase()}`;
+    const score = Number(quiz.score) || 0;
+    const totalItems = Number(quiz.totalItems) || 0;
+    const pct = totalItems > 0 ? (score / totalItems) * 100 : 0;
+    const current = acc.get(key) || {
+      uid: userId || key,
+      name: student?.name || fallbackName,
+      isActive: student?.isActive ?? true,
+      count: 0,
+      totalPct: 0,
+    };
+
+    current.count += 1;
+    current.totalPct += pct;
+    current.avgPct = Math.round(current.totalPct / current.count);
+    acc.set(key, current);
+    return acc;
+  }, new Map()).values())
+    .sort((a, b) => b.avgPct - a.avgPct || b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 5);
   const recentQuizzes = quizzes.slice(0, 8);
   const fromLabel = dateFrom ? new Date(dateFrom).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
   const toLabel   = dateTo   ? new Date(dateTo).toLocaleDateString('en-PH',   { month: 'short', day: 'numeric', year: 'numeric' }) : null;
@@ -105,14 +128,16 @@ export default function AdminDashboard() {
       <div className="grid md:grid-cols-2 gap-4">
         <div className={dashboardCardClass}>
           <h3 className="font-black text-slate-900 dark:text-white mb-3 text-sm">Top Students</h3>
-          {!topStudents.filter(u => u.count > 0).length
+          {!topStudents.length
             ? <p className="text-sm text-slate-500 dark:text-slate-400">No activity in this range</p>
-            : topStudents.filter(u => u.count > 0).map((u, i) => (
+            : topStudents.map((u, i) => (
               <div key={u.uid} className="flex items-center gap-3 py-2 border-b border-indigo-100/70 dark:border-slate-800 last:border-0">
                 <div className="w-8 h-8 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-xs font-black text-indigo-500 dark:text-indigo-300">{i + 1}</div>
                 <div className="flex-1">
                   <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{u.name}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{u.count} quiz{u.count !== 1 ? 'zes' : ''}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    {u.avgPct}% avg - {u.count} quiz{u.count !== 1 ? 'zes' : ''}
+                  </div>
                 </div>
                 <span className={`badge ${u.isActive ? 'badge-green' : 'badge-red'}`}>{u.isActive ? 'active' : 'inactive'}</span>
               </div>

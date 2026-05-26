@@ -4,7 +4,7 @@ import { getAllStudents, toggleStudentActive } from '../services/adminService';
 import { getAllQuizzes }         from '../services/quizService';
 
 const usersPanelClass = 'bg-white/80 dark:bg-slate-900/50 backdrop-blur-md border border-indigo-100/70 dark:border-slate-800/80 rounded-xl shadow-xl shadow-indigo-500/5 dark:shadow-black/20 text-slate-900 dark:text-white overflow-hidden';
-const searchInputClass = 'w-full bg-slate-950 text-slate-100 placeholder-slate-500 border border-slate-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const searchInputClass = 'w-full bg-white dark:bg-[#0d121f] text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 shadow-sm dark:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-indigo-500 focus:border-purple-400 dark:focus:border-indigo-500';
 
 export default function AdminUsers() {
   const [students, setStudents] = useState([]);
