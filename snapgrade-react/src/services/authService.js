@@ -83,6 +83,18 @@ async function assertCurrentUserIsAdmin() {
   if (error || data?.role !== 'admin') throw new Error('Admin access is required.');
 }
 
+function getPasswordResetUrl() {
+  if (import.meta.env.VITE_PASSWORD_RESET_URL) {
+    return import.meta.env.VITE_PASSWORD_RESET_URL;
+  }
+
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5173/reset-password';
+  }
+
+  return `${window.location.origin}/reset-password`;
+}
+
 export function validatePassword(p) {
   if (p.length < 12 || p.length > 15)
     return 'Password must be 12 to 15 characters long.';
@@ -218,13 +230,17 @@ export async function resetPassword(email) {
   if (!safeEmail) throw new Error('Please enter a valid email address.');
 
   const { error } = await supabase.auth.resetPasswordForEmail(safeEmail, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: getPasswordResetUrl(),
   });
   if (error) {
     console.error('Reset password error:', error);
     if (error.message.includes('Invalid email')) {
       throw new Error('Please enter a valid email address.');
     }
+    if (error.message.toLowerCase().includes('redirect')) {
+      throw new Error('Password reset redirect URL is not allowed in Supabase. Add http://localhost:5173/reset-password to Redirect URLs.');
+    }
+    throw new Error(error.message || 'Could not send the password reset email. Please try again.');
   }
 }
 

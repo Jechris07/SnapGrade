@@ -28,23 +28,21 @@ export default function Results() {
   if (!quiz) return null;
 
   const pct        = Math.round((quiz.score / quiz.totalItems) * 100);
-  const { bg, fg } = getScoreColor(pct);
+  const { fg } = getScoreColor(pct);
   const grade      = getScoreGrade(pct);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 page-enter">
 
       {/* Score header */}
-      <div className="card text-center mb-5 py-10"
-        style={{ background: `linear-gradient(135deg,${bg}44,#fff)` }}>
-        <div className="w-36 h-36 rounded-lg flex flex-col items-center justify-center mx-auto mb-4 animate-bounce-in"
-          style={{ background: `linear-gradient(135deg,${fg}22,${fg}11)`, border: `4px solid ${fg}33` }}>
+      <div className="w-full max-w-2xl mx-auto rounded-2xl p-8 text-center border transition-all duration-300 bg-white border-slate-200 shadow-xl dark:bg-[#11131d]/80 dark:backdrop-blur-md dark:border-indigo-400/15 dark:shadow-indigo-500/10 mb-5">
+        <div className="w-32 h-32 mx-auto flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800 transition-colors animate-bounce-in">
           <span className="font-black leading-none" style={{ fontSize: '3rem', color: fg, letterSpacing: '-2px' }}>
             {pct}%
           </span>
         </div>
-        <h2 className="text-xl font-black text-indigo-950 mb-1">{grade}</h2>
-        <p className="text-sm text-gray-400 mb-6">{quiz.score} out of {quiz.totalItems} correct</p>
+        <h2 className="text-2xl font-black mt-4 text-slate-900 dark:text-white transition-colors">{grade}</h2>
+        <p className="text-base font-semibold mt-2 block text-slate-600 dark:text-slate-300 transition-colors mb-6">{quiz.score} out of {quiz.totalItems} correct</p>
         <div className="flex gap-3 justify-center flex-wrap">
           <button className="btn-primary" style={{ width: 'auto', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}
             onClick={() => navigate('/home')}>
@@ -57,27 +55,24 @@ export default function Results() {
       </div>
 
       {/* Answer review */}
-      <h3 className="text-base font-black text-indigo-950 mb-3">Answer Review</h3>
+      <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-slate-100 transition-colors">Answer Review</h3>
       <div className="flex flex-col gap-3">
         {quiz.answers.map((a, i) => {
           const isCorrect    = a.userAnswer?.charAt(0) === a.correct;
           const correctChoice = a.choices?.find(c => c.startsWith(a.correct)) || '';
           return (
-            <div key={i} className="bg-white rounded-md p-4"
-              style={{ borderLeft: `4px solid ${isCorrect ? '#22c55e' : '#ef4444'}`,
-                border: `1.5px solid ${isCorrect ? '#bbf7d0' : '#fecaca'}`,
-                borderLeftWidth: 4 }}>
+            <div key={i} className="p-5 mb-4 rounded-xl border transition-all duration-300 bg-white border-slate-200 shadow-sm dark:bg-[#11131d]/60 dark:border-indigo-400/15 dark:shadow-indigo-500/5">
               <div className="flex gap-2 items-start">
                 <span className={`text-xs font-black px-2 py-0.5 rounded-md flex-shrink-0 mt-0.5
-                  ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  ${isCorrect ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
                   {isCorrect ? '✓' : '✗'} Q{i + 1}
                 </span>
-                <p className="text-sm font-bold text-indigo-950 leading-relaxed">{a.question}</p>
+                <p className="font-bold text-slate-900 dark:text-slate-100">{a.question}</p>
               </div>
               {!isCorrect && (
                 <div className="ml-10 mt-2 flex flex-col gap-1 text-xs">
-                  <span className="text-red-400">Your answer: <strong>{a.userAnswer || 'Not answered'}</strong></span>
-                  <span className="text-green-600">Correct: <strong>{correctChoice}</strong></span>
+                  <span className="text-rose-600 dark:text-rose-400">Your answer: <strong>{a.userAnswer || 'Not answered'}</strong></span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Correct: <strong>{correctChoice}</strong></span>
                 </div>
               )}
             </div>

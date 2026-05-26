@@ -7,6 +7,7 @@ import ProtectedRoute      from './components/ProtectedRoute';
 import Navbar              from './components/Navbar';
 import Login           from './pages/Login';
 import Register        from './pages/Register';
+import AuthCallback    from './pages/AuthCallback';
 import ForgotPassword  from './pages/ForgotPassword';
 import ResetPassword   from './pages/ResetPassword';
 import AdminRegister   from './pages/AdminRegister';
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/admin-register" element={<ProtectedRoute requiredRole="admin" denyOnRoleMismatch>{layout(<AdminRegister />)}</ProtectedRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

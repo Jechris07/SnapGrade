@@ -51,8 +51,8 @@ export default function History() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 page-enter">
       <div className="mb-6">
-        <h2 className="text-2xl font-black text-indigo-950">Quiz History ◷</h2>
-        <p className="text-sm text-gray-400 mt-1">{quizzes.length} quiz{quizzes.length !== 1 ? 'zes' : ''} completed</p>
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white transition-colors">Quiz History ◷</h2>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors mt-1">{quizzes.length} quiz{quizzes.length !== 1 ? 'zes' : ''} completed</p>
       </div>
       <div className="flex flex-col gap-3">
         {quizzes.map((quiz, idx) => {
@@ -60,16 +60,32 @@ export default function History() {
           const { bg, fg } = getScoreColor(pct);
           const date = new Date(quiz.completedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
           return (
-            <div key={quiz.id} className="history-card" style={{ animationDelay: `${idx * 0.04}s` }}>
-              <div className="w-14 h-14 rounded-md flex items-center justify-center font-black text-base flex-shrink-0"
-                style={{ background: bg, color: fg }}>{pct}%</div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-indigo-950 truncate">{quiz.notesPreview}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{quiz.score}/{quiz.totalItems} correct · {date}</p>
+            <div
+              key={quiz.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 mb-3 rounded-xl border transition-all duration-300 bg-white border-slate-200 shadow-sm dark:bg-[#11131d]/60 dark:border-indigo-400/15 dark:shadow-indigo-500/5"
+              style={{ animationDelay: `${idx * 0.04}s` }}
+            >
+              <div className="flex flex-1 items-center gap-5 sm:gap-6 min-w-0">
+                <div className="w-14 h-14 rounded-md flex items-center justify-center font-black text-base flex-shrink-0"
+                  style={{ background: bg, color: fg }}>{pct}%</div>
+                <div className="flex-1 min-w-0 pl-2 text-left">
+                  <p className="font-bold text-slate-900 dark:text-slate-100 truncate">{quiz.notesPreview}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">{quiz.score}/{quiz.totalItems} correct · {date}</p>
+                </div>
               </div>
               <div className="flex gap-2 flex-shrink-0">
-                <button className="btn-sm-purple" onClick={() => handleRetake(quiz)}>Retake</button>
-                <button className="btn-sm-danger" onClick={() => handleDelete(quiz.id)}>Delete</button>
+                <button
+                  className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 transition-all hover:bg-indigo-100 dark:border-indigo-400/20 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+                  onClick={() => handleRetake(quiz)}
+                >
+                  Retake
+                </button>
+                <button
+                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition-all hover:bg-rose-100 dark:border-rose-400/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20"
+                  onClick={() => handleDelete(quiz.id)}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           );
