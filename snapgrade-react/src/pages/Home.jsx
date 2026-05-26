@@ -78,7 +78,7 @@ export default function Home() {
               max={30}
               value={numQ}
               onChange={e => setNumQ(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-              className="w-16 p-2 rounded-lg border border-slate-200 bg-white text-slate-900 !text-slate-900 placeholder-slate-400 hover:border-indigo-300 hover:!text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none focus:!text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 dark:!text-slate-100 dark:hover:!text-slate-100 dark:focus:!text-slate-100 transition-colors duration-200"
+              className="w-16 p-2 rounded-lg border border-slate-200 bg-white !text-slate-900 placeholder-slate-400 hover:border-indigo-300 hover:!text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none focus:!text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:!text-slate-100 dark:hover:!text-slate-100 dark:focus:!text-slate-100 transition-colors duration-200"
               style={{ padding: '0.5rem' }}
             />
             <div className="relative flex gap-2 flex-wrap rounded-xl bg-indigo-50/60 p-1 transition-colors duration-300 dark:bg-white/5">
