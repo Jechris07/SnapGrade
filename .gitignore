@@ -11,6 +11,7 @@ yarn-debug.log*
 # Production
 dist/
 build/
+target/
 
 # IDE
 .vscode/

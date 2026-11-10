@@ -1,15 +1,31 @@
 {
+  "name": "snapgrade",
+  "version": "1.0.0",
+  "description": "SnapGrade — AI-Powered Quiz Generator Web App",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "dev:api": "npm --prefix snapgrade-react run dev:api",
-    "dev": "npm --prefix snapgrade-react run dev",
-    "build": "npm --prefix snapgrade-react run build"
+    "test:api": "node --test server/api.test.js server/answerFeedback.test.js",
+    "dev:api": "node server/index.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "dompurify": "^3.4.5",
     "framer-motion": "^12.40.0",
-    "jsdom": "^29.1.1",
-    "lucide-react": "^1.16.0"
+    "groq-sdk": "^1.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "react-toastify": "^10.0.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.4.21"
   }
 }
