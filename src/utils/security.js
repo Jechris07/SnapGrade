@@ -1,0 +1,134 @@
+import createDOMPurify from 'dompurify';
+
+const CONTROL_CHARS_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+const HTML_TAG_RE = /<[^>]*>/g;
+const SCRIPT_STYLE_BLOCK_RE = /<(script|style|template)[\s\S]*?>[\s\S]*?<\/\1>/gi;
+const ROLE_ALLOWLIST = new Set(['student', 'admin']);
+const browserWindow = typeof window !== 'undefined' && window.document ? window : null;
+const domPurify = browserWindow ? createDOMPurify(browserWindow) : null;
+
+function toStringValue(value) {
+  return value == null ? '' : String(value);
+}
+
+export function sanitizeHtml(value) {
+  const html = toStringValue(value).replace(CONTROL_CHARS_RE, '');
+
+  if (!domPurify) {
+    return html
+      .replace(SCRIPT_STYLE_BLOCK_RE, '')
+      .replace(HTML_TAG_RE, '')
+      .replace(/[<>]/g, '');
+  }
+
+  return domPurify.sanitize(html, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true,
+    RETURN_TRUSTED_TYPE: false,
+  });
+}
+
+export function sanitizePlainText(value, {
+  maxLength = 500,
+  allowNewlines = false,
+  stripMarkup = true,
+} = {}) {
+  let text = toStringValue(value)
+    .replace(/\r\n?/g, '\n')
+    .replace(CONTROL_CHARS_RE, '');
+
+  if (stripMarkup) {
+    text = sanitizeHtml(text);
+  }
+
+  if (!allowNewlines) {
+    text = text.replace(/\s+/g, ' ');
+  } else {
+    text = text
+      .split('\n')
+      .map((line) => line.replace(/[^\S\n]+/g, ' ').trim())
+      .join('\n')
+      .replace(/\n{4,}/g, '\n\n\n');
+  }
+
+  return text.trim().slice(0, maxLength);
+}
+
+export function sanitizeEmail(value) {
+  return toStringValue(value)
+    .replace(CONTROL_CHARS_RE, '')
+    .trim()
+    .toLowerCase()
+    .slice(0, 254);
+}
+
+export function sanitizeName(value) {
+  return sanitizePlainText(value, { maxLength: 80 });
+}
+
+export function sanitizeRole(value) {
+  return ROLE_ALLOWLIST.has(value) ? value : 'student';
+}
+
+export function sanitizeNotes(value) {
+  return sanitizePlainText(value, {
+    maxLength: 12000,
+    allowNewlines: true,
+    stripMarkup: true,
+  });
+}
+
+export function sanitizeQuizText(value, maxLength = 500) {
+  return sanitizePlainText(value, { maxLength });
+}
+
+export function sanitizeGeneratedQuestions(questions) {
+  if (!Array.isArray(questions)) return [];
+
+  return questions
+    .map((item) => {
+      const question = sanitizeQuizText(item?.question, 700);
+      const choices = Array.isArray(item?.choices)
+        ? item.choices.slice(0, 4).map((choice) => sanitizeQuizText(choice, 250))
+        : [];
+      const answer = /^[A-D]$/.test(item?.answer) ? item.answer : '';
+      const explanation = typeof item?.explanation === 'string'
+        ? sanitizeQuizText(item.explanation, 700)
+        : '';
+
+      return { question, choices, answer, explanation };
+    })
+    .filter(({ question, choices, answer }) => (
+      question &&
+      answer &&
+      choices.length === 4 &&
+      choices.every(Boolean)
+    ));
+}
+
+export function sanitizeQuizRecord(quiz) {
+  if (!quiz || typeof quiz !== 'object') return null;
+
+  const questions = sanitizeGeneratedQuestions(quiz.questions);
+  const answers = Array.isArray(quiz.answers)
+    ? quiz.answers.map((answer) => ({
+        question: sanitizeQuizText(answer?.question, 700),
+        choices: Array.isArray(answer?.choices)
+          ? answer.choices.slice(0, 4).map((choice) => sanitizeQuizText(choice, 250))
+          : [],
+        correct: /^[A-D]$/.test(answer?.correct) ? answer.correct : '',
+        userAnswer: sanitizeQuizText(answer?.userAnswer, 250),
+        explanation: typeof answer?.explanation === 'string' ? sanitizeQuizText(answer.explanation, 700) : '',
+      }))
+    : undefined;
+
+  return {
+    ...quiz,
+    id: sanitizeQuizText(quiz.id, 80),
+    userName: sanitizeQuizText(quiz.userName, 80),
+    notesPreview: sanitizeQuizText(quiz.notesPreview, 220),
+    questions,
+    answers,
+  };
+}
